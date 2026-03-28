@@ -1,0 +1,37 @@
+.shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 2rem;
+  background:
+    linear-gradient(rgba(6, 30, 46, 0.62), rgba(6, 30, 46, 0.62)),
+    url('../assets/pattern.png') center / cover no-repeat;
+  color: #f2fbff;
+}
+
+.hero {
+  display: grid;
+  gap: 1.5rem;
+  max-width: 56rem;
+  align-items: center;
+}
+
+.hero img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 1rem;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
+}
+
+.copy {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.code-asset,
+.manifest-asset {
+  font-family: monospace;
+  font-size: 0.8rem;
+  overflow-wrap: anywhere;
+}
