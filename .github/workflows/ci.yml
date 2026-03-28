@@ -51,22 +51,3 @@ jobs:
 
       - name: Pack npm tarball
         run: npm run pack
-
-      - name: List artifact directory
-        run: ls -la "${{ github.workspace }}/.artifacts"
-
-      - name: Upload package tarball artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ng-smart-images-tarball-${{ github.sha }}
-          path: ${{ github.workspace }}/.artifacts
-          if-no-files-found: error
-          retention-days: 14
-
-      - name: Upload package dist artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ng-smart-images-dist-${{ github.sha }}
-          path: packages/ng-smart-images/dist
-          if-no-files-found: error
-          retention-days: 14
