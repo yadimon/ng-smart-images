@@ -20,6 +20,18 @@
 4. Push the version commit and tag to GitHub.
 5. Create a GitHub Release or run the `Publish Package` workflow manually.
 
+## Shortcut npm Jobs
+
+For day-to-day releases, use one of these root scripts:
+
+- `npm run release:patch`
+- `npm run release:minor`
+- `npm run release:major`
+
+Each job runs `verify`, runs a publish dry-run, bumps the package version, creates the release commit plus `vX.Y.Z` tag, and pushes both to GitHub. After that, publish the matching GitHub Release or run the `Publish Package` workflow manually.
+
+The lower-level `version:*` scripts only update the package version files. The `release:*` scripts are the ones that also create the release commit and `vX.Y.Z` tag.
+
 The release workflow verifies the repository, packs the npm tarball, uploads the tarball and package `dist` as workflow artifacts, and then publishes the package.
 
 ## Trusted Publishing vs npm Tokens

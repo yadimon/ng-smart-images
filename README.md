@@ -24,6 +24,9 @@ Useful focused commands:
 - `npm run typecheck`
 - `npm run test`
 - `npm run build:example`
+- `npm run release:patch`
+- `npm run release:minor`
+- `npm run release:major`
 
 ## Publishing
 
