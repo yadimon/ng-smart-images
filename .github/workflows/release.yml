@@ -1,0 +1,67 @@
+name: Publish Package
+
+on:
+  release:
+    types:
+      - published
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Skip npm publish and only build plus upload artifacts
+        required: false
+        type: boolean
+        default: false
+
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.14.0
+          registry-url: https://registry.npmjs.org
+          cache: npm
+
+      - name: Set up npm
+        run: npm install --global npm@^11.5.1
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify repository
+        run: npm run verify
+
+      - name: Pack npm tarball
+        run: npm run pack
+
+      - name: Upload package tarball artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ng-smart-images-release-tarball-${{ github.sha }}
+          path: .artifacts/
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload package dist artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ng-smart-images-release-dist-${{ github.sha }}
+          path: packages/ng-smart-images/dist
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Publish package
+        if: github.event_name == 'release' || !inputs.dry_run
+        run: npm publish --workspace @yadimon/ng-smart-images --access public

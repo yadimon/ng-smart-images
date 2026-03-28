@@ -1,0 +1,12 @@
+{
+  "defaults": {
+    "extensions": ["avif", "webp", "original"],
+    "quality": 76,
+    "sizes": [320, 640, 960]
+  },
+  "images": {
+    "src/assets/code-photo.png": {},
+    "src/assets/hero.png": {},
+    "src/assets/included-only.png": {}
+  }
+}

@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.angular/
+coverage/
+tmp/
+.artifacts/
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+.npmrc
+.idea/
+examples/*/src/assets/ng-smart-images/
+examples/*/src/app/generated/
