@@ -1,0 +1,85 @@
+{
+  "name": "@yadimon/ng-smart-images",
+  "version": "0.1.0",
+  "description": "CLI-first smart image optimization with hashed asset generation, runtime manifests, and optional Angular helpers.",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yadimon/ng-smart-images.git"
+  },
+  "homepage": "https://github.com/yadimon/ng-smart-images#readme",
+  "bugs": {
+    "url": "https://github.com/yadimon/ng-smart-images/issues"
+  },
+  "keywords": [
+    "angular",
+    "cli",
+    "images",
+    "avif",
+    "webp",
+    "performance"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "ng-smart-images": "dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./runtime": {
+      "types": "./dist/runtime/index.d.ts",
+      "default": "./dist/runtime/index.js"
+    },
+    "./angular": {
+      "types": "./dist/angular/index.d.ts",
+      "default": "./dist/angular/index.js"
+    },
+    "./manifest": {
+      "types": "./dist/runtime/manifest.d.ts",
+      "default": "./dist/runtime/manifest.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "engines": {
+    "node": "^20.19.0 || ^22.14.0 || ^24.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "node ./scripts/build-package.mjs",
+    "pack": "node -e \"require('node:fs').mkdirSync('../../.artifacts', { recursive: true })\" && npm run build && npm pack --pack-destination ../../.artifacts",
+    "lint": "eslint src tests scripts",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "npm run build && vitest run",
+    "test:integration": "npm run build && vitest run tests/integration.spec.ts"
+  },
+  "dependencies": {
+    "picomatch": "^4.0.3",
+    "sharp": "^0.34.5",
+    "tinyglobby": "^0.2.15"
+  },
+  "peerDependencies": {
+    "@angular/core": "^20.0.0 || ^21.0.0 || ^22.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@angular/core": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@angular/core": "^21.2.0",
+    "@types/node": "^24.6.0",
+    "@types/picomatch": "^4.0.2",
+    "typescript": "~5.9.3",
+    "vitest": "^4.0.8"
+  }
+}

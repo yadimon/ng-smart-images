@@ -1,0 +1,38 @@
+{
+  "name": "ng-smart-images-workspace",
+  "private": true,
+  "type": "module",
+  "packageManager": "npm@10.9.4",
+  "engines": {
+    "node": "^20.19.0 || ^22.14.0 || ^24.0.0"
+  },
+  "workspaces": [
+    "packages/*",
+    "examples/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspace @yadimon/ng-smart-images",
+    "pack": "npm run pack --workspace @yadimon/ng-smart-images",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check",
+    "test": "npm run test --workspace @yadimon/ng-smart-images",
+    "typecheck": "npm run typecheck --workspace @yadimon/ng-smart-images",
+    "build:example": "npm run build --workspace basic-app",
+    "test:integration": "npm run test:integration --workspace @yadimon/ng-smart-images",
+    "verify": "npm run format:check && npm run lint && npm run typecheck && npm run test && npm run build:example",
+    "publish:dry-run": "npm run pack && npm publish --workspace @yadimon/ng-smart-images --dry-run",
+    "version:patch": "npm version patch --workspace @yadimon/ng-smart-images",
+    "version:minor": "npm version minor --workspace @yadimon/ng-smart-images",
+    "version:major": "npm version major --workspace @yadimon/ng-smart-images"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.38.0",
+    "eslint": "^9.38.0",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^16.4.0",
+    "prettier": "^3.6.2",
+    "typescript-eslint": "^8.46.1"
+  }
+}
