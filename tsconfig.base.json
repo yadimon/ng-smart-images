@@ -10,12 +10,11 @@
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
-    "baseUrl": ".",
     "paths": {
-      "@yadimon/ng-smart-images": ["packages/ng-smart-images/src/index.ts"],
-      "@yadimon/ng-smart-images/runtime": ["packages/ng-smart-images/src/runtime/index.ts"],
-      "@yadimon/ng-smart-images/angular": ["packages/ng-smart-images/src/angular/index.ts"],
-      "@yadimon/ng-smart-images/manifest": ["packages/ng-smart-images/src/runtime/manifest.ts"]
+      "@yadimon/ng-smart-images": ["./packages/ng-smart-images/src/index.ts"],
+      "@yadimon/ng-smart-images/runtime": ["./packages/ng-smart-images/src/runtime/index.ts"],
+      "@yadimon/ng-smart-images/angular": ["./packages/ng-smart-images/src/angular/index.ts"],
+      "@yadimon/ng-smart-images/manifest": ["./packages/ng-smart-images/src/runtime/manifest.ts"]
     },
     "types": ["node"]
   }
