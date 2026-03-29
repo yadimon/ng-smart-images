@@ -5,6 +5,7 @@
 ## What It Does
 
 - Generates hashed `avif`, `webp`, and original-format outputs.
+- Reuses unchanged generated assets when the source image and manifest config have not changed.
 - Writes a source manifest that you can keep in version control and extend over time.
 - Writes a generated runtime manifest plus helper wrapper for code-driven lookups.
 - Rewrites static `html` and `css` asset references in `dist/` to hashed URLs.
