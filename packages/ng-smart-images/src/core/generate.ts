@@ -1,12 +1,23 @@
+import { createHash } from 'node:crypto';
 import { constants } from 'node:fs';
-import { access, readFile, stat } from 'node:fs/promises';
+import { access, readFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { loadProjectConfig, resolveEntryConfig } from './config.js';
 import { generateImageArtifact } from './optimize.js';
-import type { GenerateHashedOptions, GeneratedProjectArtifacts } from './types.js';
+import type {
+  GenerateHashedOptions,
+  GeneratedProjectArtifacts,
+  SmartImageReuseCache,
+  SmartImageReuseCacheEntry,
+} from './types.js';
 import type { SmartImagesManifest } from '../runtime/manifest.js';
 import { writeTextFile } from '../utils/fs.js';
+
+const IMAGE_REUSE_CACHE_FILE_NAME = '.ng-smart-images.cache.json';
+const IMAGE_REUSE_CACHE_SCHEMA_VERSION = 1;
+
+let installedPackageVersionPromise: Promise<string> | null = null;
 
 export async function generateHashedImages(
   options: GenerateHashedOptions = {},
@@ -16,12 +27,21 @@ export async function generateHashedImages(
   const generatedAssetsDir = path.join(cwd, config.generatedAssetsDir);
   const assetsRootAbsolute = path.join(cwd, config.assetsRoot);
   const runtimeManifestJsonPath = path.join(cwd, config.runtimeManifestJsonPath);
+  const runtimeCacheJsonPath = path.join(
+    path.dirname(runtimeManifestJsonPath),
+    IMAGE_REUSE_CACHE_FILE_NAME,
+  );
   const runtimeManifestTsPath = path.join(cwd, config.runtimeManifestTsPath);
   const runtimeHelperTsPath = path.join(cwd, config.runtimeHelperTsPath);
   const runtimeManifest: SmartImagesManifest = {};
   const previousRuntimeManifest = await loadRuntimeManifest(runtimeManifestJsonPath);
-  const runtimeManifestMtimeMs = await getFileModifiedTime(runtimeManifestJsonPath);
-  const projectManifestMtimeMs = await getFileModifiedTime(manifestPath);
+  const previousReuseCache = await loadReuseCache(runtimeCacheJsonPath);
+  const packageVersion = await getInstalledPackageVersion();
+  const runtimeReuseCache: SmartImageReuseCache = {
+    schemaVersion: IMAGE_REUSE_CACHE_SCHEMA_VERSION,
+    packageVersion,
+    entries: {},
+  };
 
   for (const sourceKey of Object.keys(config.images).sort()) {
     const resolvedEntry = resolveEntryConfig(sourceKey, config, cwd);
@@ -29,16 +49,24 @@ export async function generateHashedImages(
       continue;
     }
 
+    const fingerprint = await createEntryFingerprint({
+      sourceKey,
+      sourcePath: resolvedEntry.sourcePath,
+      sizes: resolvedEntry.sizes,
+      quality: resolvedEntry.quality,
+      extensions: resolvedEntry.extensions,
+      packageVersion,
+    });
     const reusableEntry = await tryReuseGeneratedEntry({
       existingEntry: previousRuntimeManifest[sourceKey],
-      runtimeManifestMtimeMs,
-      projectManifestMtimeMs,
-      sourcePath: resolvedEntry.sourcePath,
+      cacheEntry: previousReuseCache.entries[sourceKey],
+      fingerprint,
       outputRoot: generatedAssetsDir,
       publicPath: config.publicPath,
     });
     if (reusableEntry) {
       runtimeManifest[sourceKey] = reusableEntry;
+      runtimeReuseCache.entries[sourceKey] = { fingerprint };
       continue;
     }
 
@@ -51,9 +79,11 @@ export async function generateHashedImages(
       entryConfig: resolvedEntry,
     });
     runtimeManifest[sourceKey] = artifact.entry;
+    runtimeReuseCache.entries[sourceKey] = { fingerprint };
   }
 
   await writeTextFile(runtimeManifestJsonPath, `${JSON.stringify(runtimeManifest, null, 2)}\n`);
+  await writeTextFile(runtimeCacheJsonPath, `${JSON.stringify(runtimeReuseCache, null, 2)}\n`);
   await writeTextFile(runtimeManifestTsPath, buildRuntimeManifestModule(runtimeManifest));
   await writeTextFile(
     runtimeHelperTsPath,
@@ -63,6 +93,7 @@ export async function generateHashedImages(
   return {
     manifestPath,
     runtimeManifestJsonPath,
+    runtimeCacheJsonPath,
     runtimeManifestTsPath,
     runtimeHelperTsPath,
     generatedAssetsDir,
@@ -84,23 +115,16 @@ function buildRuntimeHelperModule(runtimeManifestBaseName: string): string {
 
 async function tryReuseGeneratedEntry(input: {
   existingEntry: SmartImagesManifest[string] | undefined;
-  runtimeManifestMtimeMs: number | null;
-  projectManifestMtimeMs: number | null;
-  sourcePath: string;
+  cacheEntry: SmartImageReuseCacheEntry | undefined;
+  fingerprint: string;
   outputRoot: string;
   publicPath: string;
 }): Promise<SmartImagesManifest[string] | null> {
-  if (!input.existingEntry || input.runtimeManifestMtimeMs === null) {
+  if (!input.existingEntry || !input.cacheEntry) {
     return null;
   }
 
-  const sourceMtimeMs = await getFileModifiedTime(input.sourcePath);
-  if (sourceMtimeMs === null) {
-    return null;
-  }
-
-  const freshnessFloor = Math.max(sourceMtimeMs, input.projectManifestMtimeMs ?? 0);
-  if (input.runtimeManifestMtimeMs < freshnessFloor) {
+  if (input.cacheEntry.fingerprint !== input.fingerprint) {
     return null;
   }
 
@@ -167,12 +191,33 @@ async function loadRuntimeManifest(filePath: string): Promise<SmartImagesManifes
   }
 }
 
-async function getFileModifiedTime(filePath: string): Promise<number | null> {
+async function loadReuseCache(filePath: string): Promise<SmartImageReuseCache> {
   try {
-    const fileStat = await stat(filePath);
-    return fileStat.mtimeMs;
+    const raw = await readFile(filePath, 'utf8');
+    if (!raw.trim()) {
+      return createEmptyReuseCache();
+    }
+
+    const parsed = JSON.parse(raw) as Partial<SmartImageReuseCache>;
+    if (parsed.schemaVersion !== IMAGE_REUSE_CACHE_SCHEMA_VERSION) {
+      return createEmptyReuseCache();
+    }
+
+    const entries = Object.fromEntries(
+      Object.entries(parsed.entries ?? {}).flatMap(([sourceKey, value]) =>
+        value && typeof value.fingerprint === 'string'
+          ? [[sourceKey, { fingerprint: value.fingerprint }]]
+          : [],
+      ),
+    );
+
+    return {
+      schemaVersion: IMAGE_REUSE_CACHE_SCHEMA_VERSION,
+      packageVersion: typeof parsed.packageVersion === 'string' ? parsed.packageVersion : '',
+      entries,
+    };
   } catch {
-    return null;
+    return createEmptyReuseCache();
   }
 }
 
@@ -183,4 +228,50 @@ async function fileExists(filePath: string): Promise<boolean> {
   } catch {
     return false;
   }
+}
+
+function createEmptyReuseCache(): SmartImageReuseCache {
+  return {
+    schemaVersion: IMAGE_REUSE_CACHE_SCHEMA_VERSION,
+    packageVersion: '',
+    entries: {},
+  };
+}
+
+async function createEntryFingerprint(input: {
+  sourceKey: string;
+  sourcePath: string;
+  sizes: number[];
+  quality: number;
+  extensions: string[];
+  packageVersion: string;
+}): Promise<string> {
+  const sourceBytes = await readFile(input.sourcePath);
+  const sourceHash = createHash('sha256').update(sourceBytes).digest('hex');
+
+  return createHash('sha256')
+    .update(
+      JSON.stringify({
+        sourceHash,
+        sourceKey: input.sourceKey,
+        entryConfig: {
+          sizes: input.sizes,
+          quality: input.quality,
+          extensions: input.extensions,
+        },
+        packageVersion: input.packageVersion,
+      }),
+    )
+    .digest('hex');
+}
+
+async function getInstalledPackageVersion(): Promise<string> {
+  installedPackageVersionPromise ??= readFile(
+    new URL('../../package.json', import.meta.url),
+    'utf8',
+  )
+    .then((raw) => JSON.parse(raw) as { version?: unknown })
+    .then((pkg) => (typeof pkg.version === 'string' ? pkg.version : '0.0.0'));
+
+  return installedPackageVersionPromise;
 }

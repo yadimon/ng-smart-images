@@ -50,10 +50,21 @@ export interface GenerateHashedOptions {
 export interface GeneratedProjectArtifacts {
   manifestPath: string;
   runtimeManifestJsonPath: string;
+  runtimeCacheJsonPath: string;
   runtimeManifestTsPath: string;
   runtimeHelperTsPath: string;
   generatedAssetsDir: string;
   runtimeManifest: SmartImagesManifest;
+}
+
+export interface SmartImageReuseCacheEntry {
+  fingerprint: string;
+}
+
+export interface SmartImageReuseCache {
+  schemaVersion: number;
+  packageVersion: string;
+  entries: Record<string, SmartImageReuseCacheEntry>;
 }
 
 export interface UpdateBundleOptions {
