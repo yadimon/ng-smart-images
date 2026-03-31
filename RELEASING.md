@@ -1,55 +1,70 @@
 # Releasing
 
-`@yadimon/ng-smart-images` uses Changesets for versioning and GitHub Actions for publishing.
+`@yadimon/ng-smart-images` uses a simple single-package release flow:
 
-## Before The First Publish
+1. configure npm Trusted Publishing for GitHub Actions
+2. bump the package version locally
+3. push the generated `v*` tag so GitHub Actions publishes that exact version
 
-1. Choose the final npm package name and scope.
-2. Add `repository`, `bugs`, and `homepage` fields to `packages/ng-smart-images/package.json`.
-3. Push the repository to GitHub.
-4. Configure npm trusted publishing for this package and GitHub repository.
+Do not set `"private": true` in `packages/ng-smart-images/package.json`; that blocks publishing entirely.
 
-## Recommended Release Flow
+## Package Status
 
-1. Make code changes.
-2. Create a changeset:
-   - `npm run changeset`
-3. Commit the code change and the new `.changeset/*.md` file.
-4. Push to `main`.
-5. The `Release` workflow updates or opens a release PR with the version bump.
-6. Merge that release PR.
-7. After the merge, the same workflow publishes the package to npm.
+The package already exists on npm, so there is no first-publish bootstrap requirement before enabling Trusted Publishing.
 
-Useful local commands:
+## Trusted Publishing
 
-- `npm run verify`
-- `npm run publish:dry-run`
-- `npm run version-packages`
-- `npm run release`
+1. open the package settings on npm
+2. add a Trusted Publisher for:
+   - GitHub user or org: `yadimon`
+   - repository: `ng-smart-images`
+   - workflow filename: `publish.yml`
+3. keep using `.github/workflows/publish.yml` for future releases
 
-`version-packages` and `release` are mainly used by CI. `changeset` is the main maintainer-facing command.
+This repository uses GitHub Actions for Trusted Publishing. npm also supports other CI providers, but this repo is already wired for GitHub Actions.
 
-## Trusted Publishing vs npm Tokens
+The publish workflow uses a current Node runtime and updates npm before publishing so Trusted Publishing keeps working with npm's current OIDC requirements.
 
-Preferred path:
+## Normal Release Flow
 
-- GitHub Actions trusted publishing
-- no npm API token stored in GitHub secrets
-- npm automatically issues a short-lived credential to the workflow
-- npm provenance is generated automatically for the published package
+1. choose one:
 
-Fallback path:
+```bash
+npm run release:patch
+npm run release:minor
+npm run release:major
+```
 
-- local `npm publish`
-- or GitHub Actions with an npm access token if trusted publishing is not available yet
+These scripts:
 
-If you publish locally or do not use trusted publishing, you still need npm authentication such as `npm login` or a granular access token with publish rights.
+- run `npm run check`
+- run `npm version ... --workspace @yadimon/ng-smart-images`
+- create the Git commit and `v*` tag
+- push the commit and tag to `origin`
 
-## Build Artifacts
+2. GitHub Actions sees the pushed `v*` tag and publishes that version to npm with Trusted Publishing
 
-The CI workflow uploads:
+If you prefer the manual equivalent, it is:
 
-- the packed npm tarball from `.artifacts/*.tgz`
-- the built package output from `packages/ng-smart-images/dist`
+```bash
+npm run check
+npm version patch --workspace @yadimon/ng-smart-images
+git push origin HEAD --follow-tags
+```
 
-These artifacts are useful for smoke checks, manual installation tests, and release verification before publishing.
+## Manual Publish Fallback
+
+If you need to publish without Trusted Publishing, authenticate with npm first:
+
+```bash
+npm login
+npm run check
+npm publish --workspace @yadimon/ng-smart-images --access public
+```
+
+## Notes
+
+- `repository`, `homepage`, and `bugs` in `packages/ng-smart-images/package.json` must match the real GitHub repository exactly.
+- For public packages published through Trusted Publishing from a public GitHub repository, npm generates provenance automatically.
+- The publish workflow verifies that the pushed Git tag matches `packages/ng-smart-images/package.json`.
+- `npm run check` covers formatting, linting, typechecking, tests, example build, tarball packing, and `npm publish --dry-run`.

@@ -5,49 +5,29 @@ on:
     branches:
       - main
   pull_request:
-  workflow_dispatch:
 
 env:
   CI: true
   NG_CLI_ANALYTICS: 'false'
 
-concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
   verify:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v5
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
         with:
-          node-version: 22.14.0
+          node-version: 22
           cache: npm
 
-      - name: Set up npm
-        run: npm install --global npm@^11.5.1
+      - name: Update npm CLI
+        run: npm install --global npm@latest
 
-      - name: Install dependencies
+      - name: Install
         run: npm ci
 
-      - name: Check formatting
-        run: npm run format:check
-
-      - name: Lint
-        run: npm run lint
-
-      - name: Typecheck
-        run: npm run typecheck
-
-      - name: Test
-        run: npm run test
-
-      - name: Build example app
-        run: npm run build:example
-
-      - name: Pack npm tarball
-        run: npm run pack
+      - name: Verify repository
+        run: npm run check

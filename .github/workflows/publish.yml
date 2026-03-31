@@ -1,0 +1,52 @@
+name: Publish
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  CI: true
+  NG_CLI_ANALYTICS: 'false'
+  NPM_CONFIG_PROVENANCE: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+          cache: npm
+
+      - name: Update npm CLI for Trusted Publishing
+        run: npm install --global npm@latest
+
+      - name: Install
+        run: npm ci
+
+      - name: Verify tag matches package version
+        if: github.event_name == 'push'
+        shell: bash
+        run: |
+          PACKAGE_VERSION="$(node -p "require('./packages/ng-smart-images/package.json').version")"
+          if [ "v${PACKAGE_VERSION}" != "${GITHUB_REF_NAME}" ]; then
+            echo "Tag ${GITHUB_REF_NAME} does not match packages/ng-smart-images/package.json version v${PACKAGE_VERSION}" >&2
+            exit 1
+          fi
+
+      - name: Verify repository
+        run: npm run check
+
+      - name: Publish to npm with Trusted Publishing
+        run: npm publish --workspace @yadimon/ng-smart-images

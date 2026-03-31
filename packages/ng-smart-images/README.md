@@ -141,5 +141,5 @@ Repository-wide release guidance lives in [`RELEASING.md`](../../RELEASING.md). 
 
 - keep the package on semver
 - use `npm run publish:dry-run` before a real publish
-- bump versions with the root `version:*` scripts
+- bump versions with the root `release:*` scripts
 - prefer GitHub trusted publishing once the repository is connected on npm

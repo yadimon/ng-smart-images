@@ -13,7 +13,6 @@
   "scripts": {
     "build": "npm run build --workspace @yadimon/ng-smart-images",
     "pack": "npm run pack --workspace @yadimon/ng-smart-images",
-    "changeset": "changeset",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier . --write",
@@ -23,12 +22,13 @@
     "build:example": "npm run build --workspace basic-app",
     "test:integration": "npm run test:integration --workspace @yadimon/ng-smart-images",
     "verify": "npm run format:check && npm run lint && npm run typecheck && npm run test && npm run build:example",
-    "publish:dry-run": "npm run pack && npm publish --workspace @yadimon/ng-smart-images --dry-run",
-    "version-packages": "changeset version",
-    "release": "changeset publish"
+    "publish:dry-run": "npm publish --workspace @yadimon/ng-smart-images --dry-run",
+    "check": "npm run verify && npm run pack && npm run publish:dry-run",
+    "release:patch": "npm run check && npm version patch --workspace @yadimon/ng-smart-images && git push origin HEAD --follow-tags",
+    "release:minor": "npm run check && npm version minor --workspace @yadimon/ng-smart-images && git push origin HEAD --follow-tags",
+    "release:major": "npm run check && npm version major --workspace @yadimon/ng-smart-images && git push origin HEAD --follow-tags"
   },
   "devDependencies": {
-    "@changesets/cli": "^2.30.0",
     "@eslint/js": "^10.0.1",
     "@types/node": "^25.5.0",
     "eslint": "^10.1.0",
