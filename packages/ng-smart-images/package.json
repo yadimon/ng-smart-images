@@ -77,9 +77,9 @@
     }
   },
   "devDependencies": {
-    "@angular/core": "^21.2.0",
-    "@types/node": "^25.5.0",
-    "@types/picomatch": "^4.0.2",
+    "@angular/core": "^21.2.7",
+    "@types/node": "^25.5.2",
+    "@types/picomatch": "^4.0.3",
     "typescript": "~5.9.3",
     "vitest": "^4.0.8"
   }
