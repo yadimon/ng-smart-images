@@ -24,9 +24,9 @@
     "verify": "npm run format:check && npm run lint && npm run typecheck && npm run test && npm run build:example",
     "publish:dry-run": "npm publish --workspace @yadimon/ng-smart-images --dry-run",
     "check": "npm run verify && npm run pack && npm run publish:dry-run",
-    "release:patch": "npm run check && npm version patch --workspace @yadimon/ng-smart-images && git push origin HEAD --follow-tags",
-    "release:minor": "npm run check && npm version minor --workspace @yadimon/ng-smart-images && git push origin HEAD --follow-tags",
-    "release:major": "npm run check && npm version major --workspace @yadimon/ng-smart-images && git push origin HEAD --follow-tags"
+    "release:patch": "npm run check && node scripts/release.mjs patch",
+    "release:minor": "npm run check && node scripts/release.mjs minor",
+    "release:major": "npm run check && node scripts/release.mjs major"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
