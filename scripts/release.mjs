@@ -16,16 +16,18 @@ if (!['patch', 'minor', 'major'].includes(bump)) {
 }
 
 const isWindows = process.platform === 'win32';
-const npmCmd = isWindows ? 'npm.cmd' : 'npm';
 
-const run = (cmd, args) => {
-  const result = spawnSync(cmd, args, { cwd: repoRoot, stdio: 'inherit' });
+// git.exe handles its own argv parsing, so we pass args verbatim without a shell.
+// This avoids cmd.exe re-parsing characters like ()@: inside the release commit
+// message ("chore(release): @yadimon/ng-smart-images@X.Y.Z").
+const runGit = (args) => {
+  const result = spawnSync('git', args, { cwd: repoRoot, stdio: 'inherit' });
   if (result.error) throw result.error;
   if (result.status !== 0) process.exit(result.status ?? 1);
 };
 
-const capture = (cmd, args) => {
-  const result = spawnSync(cmd, args, { cwd: repoRoot, encoding: 'utf8' });
+const captureGit = (args) => {
+  const result = spawnSync('git', args, { cwd: repoRoot, encoding: 'utf8' });
   if (result.error) throw result.error;
   if (result.status !== 0) {
     if (result.stderr) process.stderr.write(result.stderr);
@@ -34,22 +36,31 @@ const capture = (cmd, args) => {
   return result.stdout.trim();
 };
 
-const status = capture('git', ['status', '--porcelain']);
+// npm is npm.cmd on Windows; Node refuses to spawn .cmd files without a shell
+// (CVE-2024-27980). The npm args here contain no shell metacharacters, so this
+// is safe.
+const runNpm = (args) => {
+  const result = spawnSync('npm', args, { cwd: repoRoot, stdio: 'inherit', shell: isWindows });
+  if (result.error) throw result.error;
+  if (result.status !== 0) process.exit(result.status ?? 1);
+};
+
+const status = captureGit(['status', '--porcelain']);
 if (status) {
   console.error('Working tree is not clean. Commit or stash changes before releasing.');
   console.error(status);
   process.exit(1);
 }
 
-run(npmCmd, ['version', bump, '--workspace', '@yadimon/ng-smart-images', '--no-git-tag-version']);
+runNpm(['version', bump, '--workspace', '@yadimon/ng-smart-images', '--no-git-tag-version']);
 
 const version = JSON.parse(readFileSync(pkgPath, 'utf8')).version;
 const tag = `v${version}`;
 const message = `chore(release): @yadimon/ng-smart-images@${version}`;
 
-run('git', ['add', pkgPath, lockPath]);
-run('git', ['commit', '-m', message]);
-run('git', ['tag', '-a', tag, '-m', tag]);
-run('git', ['push', 'origin', 'HEAD', '--follow-tags']);
+runGit(['add', pkgPath, lockPath]);
+runGit(['commit', '-m', message]);
+runGit(['tag', '-a', tag, '-m', tag]);
+runGit(['push', 'origin', 'HEAD', '--follow-tags']);
 
 console.log(`\nReleased ${tag}. Publish workflow should now run on the pushed tag.`);
