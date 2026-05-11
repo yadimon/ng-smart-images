@@ -23,9 +23,6 @@ jobs:
           node-version: 22
           cache: npm
 
-      - name: Update npm CLI
-        run: npm install --global npm@latest
-
       - name: Install
         run: npm ci
 
