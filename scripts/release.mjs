@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { execFileSync } from 'node:child_process';
+import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -15,8 +15,24 @@ if (!['patch', 'minor', 'major'].includes(bump)) {
   process.exit(1);
 }
 
-const run = (cmd, args) => execFileSync(cmd, args, { cwd: repoRoot, stdio: 'inherit', shell: process.platform === 'win32' });
-const capture = (cmd, args) => execFileSync(cmd, args, { cwd: repoRoot, encoding: 'utf8', shell: process.platform === 'win32' }).trim();
+const isWindows = process.platform === 'win32';
+const npmCmd = isWindows ? 'npm.cmd' : 'npm';
+
+const run = (cmd, args) => {
+  const result = spawnSync(cmd, args, { cwd: repoRoot, stdio: 'inherit' });
+  if (result.error) throw result.error;
+  if (result.status !== 0) process.exit(result.status ?? 1);
+};
+
+const capture = (cmd, args) => {
+  const result = spawnSync(cmd, args, { cwd: repoRoot, encoding: 'utf8' });
+  if (result.error) throw result.error;
+  if (result.status !== 0) {
+    if (result.stderr) process.stderr.write(result.stderr);
+    process.exit(result.status ?? 1);
+  }
+  return result.stdout.trim();
+};
 
 const status = capture('git', ['status', '--porcelain']);
 if (status) {
@@ -25,7 +41,7 @@ if (status) {
   process.exit(1);
 }
 
-run('npm', ['version', bump, '--workspace', '@yadimon/ng-smart-images', '--no-git-tag-version']);
+run(npmCmd, ['version', bump, '--workspace', '@yadimon/ng-smart-images', '--no-git-tag-version']);
 
 const version = JSON.parse(readFileSync(pkgPath, 'utf8')).version;
 const tag = `v${version}`;
