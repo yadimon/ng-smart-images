@@ -77,10 +77,10 @@
     }
   },
   "devDependencies": {
-    "@angular/core": "^21.2.9",
-    "@types/node": "^25.6.0",
+    "@angular/core": "^21.2.13",
+    "@types/node": "^25.8.0",
     "@types/picomatch": "^4.0.3",
     "typescript": "~5.9.3",
-    "vitest": "^4.1.4"
+    "vitest": "^4.1.6"
   }
 }
