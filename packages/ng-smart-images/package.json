@@ -66,7 +66,7 @@
   "dependencies": {
     "picomatch": "^4.0.3",
     "sharp": "^0.34.5",
-    "tinyglobby": "^0.2.16"
+    "tinyglobby": "^0.2.17"
   },
   "peerDependencies": {
     "@angular/core": "^20.0.0 || ^21.0.0 || ^22.0.0"
@@ -77,7 +77,7 @@
     }
   },
   "devDependencies": {
-    "@angular/core": "^21.2.14",
+    "@angular/core": "^21.2.15",
     "@types/node": "^25.9.1",
     "@types/picomatch": "^4.0.3",
     "typescript": "~5.9.3",
