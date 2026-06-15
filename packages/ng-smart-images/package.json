@@ -1,6 +1,6 @@
 {
   "name": "@yadimon/ng-smart-images",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "CLI-first smart image optimization with hashed asset generation, runtime manifests, and optional Angular helpers.",
   "type": "module",
   "license": "MIT",
