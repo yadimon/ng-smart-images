@@ -10,18 +10,18 @@
     "start": "npm run smart-images:generate && ng serve"
   },
   "dependencies": {
-    "@angular/common": "^21.2.15",
-    "@angular/compiler": "^21.2.14",
-    "@angular/core": "^21.2.15",
-    "@angular/platform-browser": "^21.2.15",
+    "@angular/common": "^22.0.1",
+    "@angular/compiler": "^22.0.1",
+    "@angular/core": "^22.0.1",
+    "@angular/platform-browser": "^22.0.1",
     "@yadimon/ng-smart-images": "*",
     "rxjs": "~7.8.0",
     "tslib": "^2.8.1"
   },
   "devDependencies": {
-    "@angular/build": "^21.2.13",
-    "@angular/cli": "^21.2.13",
-    "@angular/compiler-cli": "^21.2.15",
+    "@angular/build": "^22.0.1",
+    "@angular/cli": "^22.0.1",
+    "@angular/compiler-cli": "^22.0.1",
     "typescript": "~5.9.2"
   }
 }
