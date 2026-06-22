@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
-import sharp from 'sharp';
+import sharp, { type FormatEnum, type Sharp } from 'sharp';
 
 import type {
   SmartImageFormat,
@@ -127,8 +127,10 @@ async function buildSourcesForExtension(input: {
   return outputs;
 }
 
-async function toOriginalFormatBuffer(
-  transformer: sharp.Sharp,
+type SharpOutputFormat = keyof FormatEnum | 'avif';
+
+function toOriginalFormatBuffer(
+  transformer: Sharp,
   extension: string,
   quality: number,
 ): Promise<Buffer> {
@@ -143,7 +145,7 @@ async function toOriginalFormatBuffer(
     case 'avif':
       return transformer.avif({ quality }).toBuffer();
     default:
-      return transformer.toFormat(extension as keyof sharp.FormatEnum).toBuffer();
+      return transformer.toFormat(extension as SharpOutputFormat).toBuffer();
   }
 }
 
