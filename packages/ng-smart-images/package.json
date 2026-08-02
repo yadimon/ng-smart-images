@@ -1,6 +1,6 @@
 {
   "name": "@yadimon/ng-smart-images",
-  "version": "0.2.9",
+  "version": "0.2.10",
   "description": "Build-time local image optimizer for Angular with hashed AVIF/WebP variants, manifests, and URL rewriting.",
   "type": "module",
   "license": "MIT",
