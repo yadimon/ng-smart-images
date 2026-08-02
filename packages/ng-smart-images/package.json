@@ -1,7 +1,7 @@
 {
   "name": "@yadimon/ng-smart-images",
   "version": "0.2.9",
-  "description": "CLI-first smart image optimization with hashed asset generation, runtime manifests, and optional Angular helpers.",
+  "description": "Build-time local image optimizer for Angular with hashed AVIF/WebP variants, manifests, and URL rewriting.",
   "type": "module",
   "license": "MIT",
   "repository": {
