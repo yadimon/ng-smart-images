@@ -6,9 +6,12 @@ updates:
       interval: weekly
     open-pull-requests-limit: 10
     groups:
-      npm-dependencies:
+      compatible-updates:
         patterns:
           - '*'
+        update-types:
+          - minor
+          - patch
     ignore:
       - dependency-name: typescript
         update-types:
