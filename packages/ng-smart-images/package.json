@@ -61,7 +61,7 @@
     "lint": "eslint src tests scripts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "npm run build && vitest run",
-    "test:integration": "npm run build && vitest run tests/integration.spec.ts"
+    "test:integration": "npm run build && vitest run tests/cli.spec.ts"
   },
   "dependencies": {
     "picomatch": "^4.0.7",

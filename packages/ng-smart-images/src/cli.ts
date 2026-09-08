@@ -14,6 +14,11 @@ interface ParsedArgs {
 async function main(): Promise<void> {
   const parsed = parseArgs(process.argv.slice(2));
 
+  if (process.argv.slice(2).some((arg) => arg === '--help' || arg === '-h')) {
+    printHelp();
+    return;
+  }
+
   switch (parsed.command) {
     case 'sync-manifest': {
       const result = await syncProjectManifest({
